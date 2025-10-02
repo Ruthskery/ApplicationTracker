@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { Plus } from 'lucide-react';
 import AddJobModal from './AddJobModal';
 import { Job } from '../../../lib/api';
 
@@ -15,8 +16,9 @@ export default function AddJobButton({ onAdd }: AddJobButtonProps) {
       <div className="flex justify-start py-5 px-10">
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 hover:shadow-md transition-all"
         >
+          <Plus className="w-5 h-5" />
           Add Job
         </button>
       </div>
@@ -25,7 +27,7 @@ export default function AddJobButton({ onAdd }: AddJobButtonProps) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onAdd={(job) => {
-          onAdd(job); // updates the table
+          onAdd(job); // update the table
           setIsOpen(false); // close modal
         }}
       />
