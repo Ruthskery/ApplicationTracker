@@ -1,12 +1,14 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import JobsTable from './components/JobsTable';
 import AddJobButton from './components/AddJobButton';
 import EditJobModal from './components/EditJobModal';
 import DeleteJobModal from './components/DeleteJobModal';
-import { fetchJobs, Job, deleteJob } from '../../lib/api';
+import LoadingScreen from '../../components/LoadingScreen';
+import { fetchJobs, Job, deleteJob } from '../../lib/api'; // adjust path if under /ats
 
-function Home() {
+export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,12 +46,17 @@ function Home() {
     }
   };
 
+  // Show loading screen until data is ready
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Cover photo section */}
       <div className="relative h-[40vh] w-full">
         <img
-          src="/cover.jpg" // replace with your image path
+          src="/cover.jpg" // in /public
           alt="Cover"
           className="h-full w-full object-cover"
         />
@@ -98,5 +105,3 @@ function Home() {
     </div>
   );
 }
-
-export default Home;

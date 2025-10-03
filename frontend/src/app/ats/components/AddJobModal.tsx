@@ -1,7 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createJob, Job } from '../../../lib/api';
-import { X } from 'lucide-react';
 
 interface AddJobModalProps {
   isOpen: boolean;
@@ -15,11 +14,52 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
   const [address, setAddress] = useState('');
   const [status, setStatus] = useState('');
   const [dateApplied, setDateApplied] = useState('');
+  const [salary, setSalary] = useState('');
+  const [contact, setContact] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  if (!isOpen) return null;
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const resetForm = () => {
+    setPosition('');
+    setCompany('');
+    setAddress('');
+    setStatus('');
+    setDateApplied('');
+    setSalary('');
+    setContact('');
+    setNotes('');
+    setError('');
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        resetForm();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  const handleClickOutside = (e: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+      resetForm();
+    }
+  };
 
   const handleSubmit = async () => {
     if (!position || !company || !status || !dateApplied) {
@@ -37,18 +77,13 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
         address,
         status,
         new Date(dateApplied),
+        salary,
+        contact,
         notes
       );
       onAdd(job);
       onClose();
-
-      // reset form
-      setPosition('');
-      setCompany('');
-      setAddress('');
-      setStatus('');
-      setDateApplied('');
-      setNotes('');
+      resetForm();
     } catch (err) {
       console.error(err);
       setError('Failed to create job. Please try again.');
@@ -57,21 +92,25 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
     }
   };
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm z-50 px-4">
-      <div className="relative bg-white dark:bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Job</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  if (!isOpen) return null;
 
-        {/* Error message */}
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 px-4 py-6"
+      onClick={handleClickOutside}
+      aria-modal="true"
+      role="dialog"
+    >
+      <div
+        ref={modalRef}
+        className="relative bg-white dark:bg-gray-900 p-6 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col"
+      >
+        {/* Header */}
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          Add Job
+        </h2>
+
+        {/* Error */}
         {error && (
           <div className="mb-4 text-sm text-red-600 bg-red-50 dark:bg-red-900/40 dark:text-red-300 px-3 py-2 rounded-md">
             {error}
@@ -79,7 +118,8 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
         )}
 
         {/* Form */}
-        <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-4">
+          {/* Position */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Position <span className="text-red-500">*</span>
@@ -92,6 +132,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
             />
           </div>
 
+          {/* Company */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Company <span className="text-red-500">*</span>
@@ -104,6 +145,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
             />
           </div>
 
+          {/* Address */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Address
@@ -116,6 +158,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
             />
           </div>
 
+          {/* Status */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Status <span className="text-red-500">*</span>
@@ -133,6 +176,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
             </select>
           </div>
 
+          {/* Date Applied */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Date Applied <span className="text-red-500">*</span>
@@ -145,6 +189,33 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
             />
           </div>
 
+          {/* Salary */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Salary
+            </label>
+            <input
+              type="text"
+              value={salary}
+              onChange={(e) => setSalary(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+            />
+          </div>
+
+          {/* Contact */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Contact
+            </label>
+            <input
+              type="text"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+            />
+          </div>
+
+          {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Notes
@@ -159,9 +230,9 @@ export default function AddJobModal({ isOpen, onClose, onAdd }: AddJobModalProps
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 mt-auto pt-2 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={onClose}
+            onClick={() => { onClose(); resetForm(); }}
             className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition"
           >
             Cancel

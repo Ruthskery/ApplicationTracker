@@ -27,6 +27,7 @@ export async function createJob(
   status: string,
   date_applied: Date,
   salary: string,
+  contact: string,
   notes?: string
 ): Promise<Job> {
   const response = await fetch(`${API_URL}/jobs/`, {
@@ -38,6 +39,8 @@ export async function createJob(
       address,
       status,
       date_applied: date_applied.toISOString().split('T')[0], // "YYYY-MM-DD"
+      salary,
+      contact,
       notes
     }),
   });
